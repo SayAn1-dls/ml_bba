@@ -7,7 +7,7 @@
 ![Gensim](https://img.shields.io/badge/Gensim-4.x-0f766e)
 ![Streamlit](https://img.shields.io/badge/Streamlit-app-FF4B4B?logo=streamlit&logoColor=white)
 
-**Live app:** _link goes here after deployment_ &nbsp;·&nbsp; **Report:** [Project_Report.pdf](docs/Project_Report.pdf) &nbsp;·&nbsp; **Notebook:** [TextAnalytics_SetD.ipynb](TextAnalytics_SetD.ipynb)
+**Live app:** [fitness-text-analytics.streamlit.app](https://fitness-text-analytics.streamlit.app) &nbsp;·&nbsp; **Report:** [Project_Report.pdf](docs/Project_Report.pdf) &nbsp;·&nbsp; **Notebook:** [TextAnalytics_SetD.ipynb](TextAnalytics_SetD.ipynb)
 
 ![App screenshot](docs/screenshots/app_overview.jpg)
 
