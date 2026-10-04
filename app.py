@@ -13,91 +13,63 @@ from nltk.stem import PorterStemmer, SnowballStemmer, WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer, word_tokenize
 from sklearn.decomposition import PCA
 
-st.set_page_config(page_title="FitText Lab", page_icon="⚡", layout="wide")
+st.set_page_config(page_title="Health & Fitness Text Analytics", page_icon=":material/analytics:", layout="wide")
 
-NEON = "#c6ff00"
-PINK = "#ff2e88"
-CYAN = "#00e5ff"
+INK = "#0f172a"
+MUTED = "#64748b"
+LINE = "#e2e8f0"
+ACCENT = "#1d4ed8"
+TEAL = "#0f766e"
+AMBER = "#b45309"
+GREY = "#cbd5e1"
 
 
 # ---------- styling ----------
 st.markdown(
     f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-html, body, [class*="css"] {{ font-family: 'Space Grotesk', sans-serif; }}
-.stApp {{
-    background: radial-gradient(circle at 15% 10%, #1d1f33 0%, #0a0a12 45%, #050508 100%);
-    color: #e9e9f2;
-}}
+html, body, [class*="css"], .stMarkdown, p, label {{ font-family: 'Inter', sans-serif; }}
+.stApp {{ background: #f8fafc; color: {INK}; }}
+.block-container {{ padding-top: 2.2rem; max-width: 1200px; }}
 #MainMenu, footer {{ visibility: hidden; }}
 header[data-testid="stHeader"] {{ background: transparent; }}
 
-.hero {{
-    padding: 2.2rem 2rem 1.6rem;
-    border-radius: 22px;
-    background: linear-gradient(120deg, rgba(198,255,0,.08), rgba(255,46,136,.08));
-    border: 1px solid rgba(255,255,255,.08);
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 1.4rem;
-}}
-.hero:before {{
-    content: "";
-    position: absolute; inset: -40%;
-    background: conic-gradient(from 0deg, transparent, {NEON}22, transparent 30%);
-    animation: spin 9s linear infinite;
-}}
-@keyframes spin {{ to {{ transform: rotate(360deg); }} }}
-.hero * {{ position: relative; }}
-.hero h1 {{
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(3rem, 8vw, 6rem);
-    line-height: .9;
-    margin: 0;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, {NEON}, {CYAN}, {PINK});
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}}
-.hero p {{ color: #a7a7bd; font-size: 1.05rem; margin: .6rem 0 0; }}
+.eyebrow {{ font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: {ACCENT}; }}
+.title {{ font-size: 2.1rem; font-weight: 700; color: {INK}; margin: .25rem 0 .4rem; letter-spacing: -.02em; }}
+.subtitle {{ color: {MUTED}; font-size: 1rem; max-width: 760px; line-height: 1.55; }}
+.rule {{ border: 0; border-top: 1px solid {LINE}; margin: 1.4rem 0 1.2rem; }}
 
-.stat {{
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 16px;
-    padding: 1rem 1.2rem;
-    transition: transform .2s, border-color .2s;
-}}
-.stat:hover {{ transform: translateY(-4px); border-color: {NEON}; }}
-.stat .num {{ font-family: 'Bebas Neue'; font-size: 2.6rem; color: {NEON}; line-height: 1; }}
-.stat .lbl {{ color: #8f8fa8; font-size: .85rem; text-transform: uppercase; letter-spacing: 1px; }}
+.metric {{ background: #fff; border: 1px solid {LINE}; border-radius: 10px; padding: .9rem 1.1rem; }}
+.metric .v {{ font-size: 1.7rem; font-weight: 600; color: {INK}; line-height: 1.1; }}
+.metric .l {{ font-size: .8rem; color: {MUTED}; margin-top: .2rem; }}
 
-.chip {{
-    display: inline-block;
-    padding: .28rem .7rem;
-    margin: .18rem;
-    border-radius: 999px;
-    font-size: .88rem;
-    background: rgba(0,229,255,.1);
-    border: 1px solid rgba(0,229,255,.35);
-    color: {CYAN};
-}}
-.chip.gone {{ background: rgba(255,46,136,.08); border-color: rgba(255,46,136,.35); color: {PINK}; text-decoration: line-through; }}
-.chip.lime {{ background: rgba(198,255,0,.08); border-color: rgba(198,255,0,.4); color: {NEON}; }}
+.section {{ font-size: 1.05rem; font-weight: 600; color: {INK}; margin: 1.4rem 0 .2rem; }}
+.note {{ font-size: .88rem; color: {MUTED}; margin-bottom: .6rem; }}
 
-.step {{ font-family: 'Bebas Neue'; font-size: 1.5rem; color: #fff; letter-spacing: 1px; margin-top: 1rem; }}
-.step span {{ color: {PINK}; margin-right: .4rem; }}
+.card {{ background: #fff; border: 1px solid {LINE}; border-radius: 10px; padding: 1rem 1.2rem; height: 100%; }}
+.card h4 {{ margin: 0 0 .35rem; font-size: .95rem; color: {INK}; }}
+.card p {{ margin: 0; font-size: .88rem; color: {MUTED}; line-height: 1.5; }}
 
-.stTabs [data-baseweb="tab-list"] {{ gap: .5rem; }}
-.stTabs [data-baseweb="tab"] {{
-    background: rgba(255,255,255,.04);
-    border-radius: 12px;
-    padding: .5rem 1.1rem;
-    color: #bbb;
-}}
-.stTabs [aria-selected="true"] {{ background: {NEON} !important; color: #000 !important; font-weight: 600; }}
+.steps {{ display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .4rem 0 .2rem; }}
+.steps .s {{ background: #fff; border: 1px solid {LINE}; border-radius: 6px; padding: .35rem .7rem; font-size: .85rem; color: {INK}; }}
+.steps .a {{ color: {GREY}; }}
+
+.tok {{ display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: .8rem;
+        padding: .15rem .5rem; margin: .15rem .2rem .15rem 0; border-radius: 4px;
+        background: #f1f5f9; border: 1px solid {LINE}; color: {INK}; }}
+.tok.drop {{ background: #fef2f2; border-color: #fecaca; color: #b91c1c; text-decoration: line-through; }}
+.tok.hit {{ background: #eff6ff; border-color: #bfdbfe; color: {ACCENT}; }}
+.row-label {{ font-size: .8rem; color: {MUTED}; margin-top: .6rem; }}
+
+.stTabs [data-baseweb="tab-list"] {{ gap: 1.6rem; border-bottom: 1px solid {LINE}; }}
+.stTabs [data-baseweb="tab"] {{ padding: .6rem 0; font-weight: 500; color: {MUTED}; background: transparent; }}
+.stTabs [aria-selected="true"] {{ color: {INK} !important; }}
+.stTabs [data-baseweb="tab-highlight"] {{ background-color: {ACCENT}; }}
+
+section[data-testid="stSidebar"] {{ background: #fff; border-right: 1px solid {LINE}; }}
+.footer {{ text-align: center; color: {MUTED}; font-size: .8rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid {LINE}; }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -166,17 +138,24 @@ def lemmatize(tokens):
     return [lemmatizer.lemmatize(w, wn_pos(t)) for w, t in nltk.pos_tag(tokens)]
 
 
-def chips(words, kind=""):
-    return "".join(f'<span class="chip {kind}">{w}</span>' for w in words)
+def tokens_html(words, kind=""):
+    return "".join(f'<span class="tok {kind}">{w}</span>' for w in words)
 
 
-def dark(fig, h=520):
+def section(title, note=None):
+    st.markdown(f'<div class="section">{title}</div>', unsafe_allow_html=True)
+    if note:
+        st.markdown(f'<div class="note">{note}</div>', unsafe_allow_html=True)
+
+
+def style_fig(fig, h=420):
     fig.update_layout(
+        template="plotly_white",
         height=h,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#d8d8e6", family="Space Grotesk"),
-        margin=dict(l=10, r=10, t=30, b=10),
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(family="Inter, sans-serif", color=INK, size=12),
+        margin=dict(l=20, r=20, t=30, b=20),
     )
     return fig
 
@@ -185,111 +164,146 @@ corpus, raw_sentences = load_data()
 
 # ---------- sidebar ----------
 with st.sidebar:
-    st.markdown(f"<h2 style='font-family:Bebas Neue;color:{NEON};letter-spacing:2px'>MODEL KNOBS</h2>",
-                unsafe_allow_html=True)
-    vector_size = st.slider("vector_size", 10, 100, 50, 10)
-    window = st.slider("window", 1, 8, 3)
-    epochs = st.slider("epochs", 50, 1000, 500, 50)
-    sg = 1 if st.radio("algorithm", ["Skip-gram", "CBOW"]) == "Skip-gram" else 0
-    seed = st.number_input("seed", 0, 9999, 42)
-    st.caption("Change anything and the model retrains instantly — tiny data, tiny wait.")
+    st.markdown("### Word2Vec parameters")
+    st.caption("Defaults are the same values used in the notebook.")
+    vector_size = st.slider("Vector size", 10, 100, 50, 10)
+    window = st.slider("Window", 1, 8, 3)
+    epochs = st.slider("Epochs", 50, 1000, 500, 50)
+    sg = 1 if st.radio("Algorithm", ["Skip-gram", "CBOW"], horizontal=True) == "Skip-gram" else 0
+    seed = st.number_input("Random seed", 0, 9999, 42)
+    st.divider()
+    st.caption("min_count is fixed at 1 because almost every word appears only once in this corpus.")
 
 model, w2v_toks = train(vector_size, window, epochs, sg, seed)
 vocab = model.wv.index_to_key
 
-# ---------- hero ----------
+# ---------- header ----------
 st.markdown(
     """
-<div class="hero">
-  <h1>FIT·TEXT LAB</h1>
-  <p>Word2Vec embeddings + a full NLP preprocessing pipeline, trained on health & fitness sentences.
-  Poke the knobs on the left and watch the word space move.</p>
-</div>
+<div class="eyebrow">Text Analytics · Assignment Set D</div>
+<div class="title">Health &amp; Fitness Text Analytics</div>
+<div class="subtitle">Word embeddings with Gensim Word2Vec and a complete NLTK preprocessing pipeline —
+cleaning, tokenization, stopword removal, stemming and lemmatization — applied to short health and fitness sentences.</div>
 """,
     unsafe_allow_html=True,
 )
+st.write("")
 
-c1, c2, c3, c4 = st.columns(4)
-for col, num, lbl in [
-    (c1, len(corpus), "W2V sentences"),
-    (c2, len(vocab), "vocab learned"),
-    (c3, vector_size, "dimensions"),
-    (c4, len(raw_sentences), "noisy sentences"),
+cols = st.columns(4)
+for col, v, l in [
+    (cols[0], len(corpus), "Word2Vec sentences"),
+    (cols[1], len(vocab), "Vocabulary size"),
+    (cols[2], vector_size, "Vector dimensions"),
+    (cols[3], len(raw_sentences), "Noisy sentences"),
 ]:
-    col.markdown(f'<div class="stat"><div class="num">{num}</div><div class="lbl">{lbl}</div></div>',
+    col.markdown(f'<div class="metric"><div class="v">{v}</div><div class="l">{l}</div></div>',
                  unsafe_allow_html=True)
 
 st.write("")
-tab1, tab2, tab3, tab4 = st.tabs(["🌌  Embedding Space", "🎯  Similarity", "🧪  Preprocessing Lab", "⚔️  Stemmer Showdown"])
+t0, t1, t2, t3, t4 = st.tabs(["Overview", "Word Embeddings", "Similarity", "Preprocessing", "Stemming vs Lemmatization"])
 
-# ---------- tab 1: word space ----------
-with tab1:
+# ---------- overview ----------
+with t0:
+    section("Problem statement")
+    a, b = st.columns(2)
+    a.markdown(
+        """<div class="card"><h4>Q1 · Word2Vec</h4><p>Train a Word2Vec model on 20 health &amp; fitness
+        sentences, inspect the vocabulary and word vectors, and find the words most similar to
+        <b>diet</b> and <b>workout</b>. Then judge whether the similarities make sense on such a small corpus.</p></div>""",
+        unsafe_allow_html=True,
+    )
+    b.markdown(
+        """<div class="card"><h4>Q2 · Preprocessing pipeline</h4><p>Take 12 noisy sentences (mixed case,
+        punctuation, numbers, emoticons) and clean them for NLP. Compare two tokenizers, two stemmers and
+        lemmatization, and track how the vocabulary shrinks at each step.</p></div>""",
+        unsafe_allow_html=True,
+    )
+
+    section("Pipeline")
+    steps = ["Raw text", "Lowercase", "Remove punctuation / numbers", "Tokenize", "Remove stopwords",
+             "Stem / Lemmatize", "Word2Vec / Analysis"]
+    st.markdown('<div class="steps">' + '<span class="a">→</span>'.join(f'<span class="s">{s}</span>' for s in steps)
+                + "</div>", unsafe_allow_html=True)
+
+    section("Datasets")
+    a, b = st.columns(2)
+    with a:
+        st.markdown('<div class="note">word2vec_corpus.csv — clean sentences for Q1</div>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame({"text": corpus}), hide_index=True, height=300, width="stretch")
+    with b:
+        st.markdown('<div class="note">dataset.csv — raw, noisy sentences for Q2</div>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame({"text": raw_sentences}), hide_index=True, height=300, width="stretch")
+
+# ---------- word embeddings ----------
+with t1:
+    section("Embedding space",
+            "Each word's vector reduced to two dimensions with PCA. Marker size reflects how often the word appears.")
     vecs = np.array([model.wv[w] for w in vocab])
     pts = PCA(n_components=2, random_state=0).fit_transform(vecs)
     counts = [model.wv.get_vecattr(w, "count") for w in vocab]
 
-    focus = st.selectbox("Highlight a word and its neighbours", vocab, index=vocab.index("diet"))
+    focus = st.selectbox("Highlight word", vocab, index=vocab.index("diet"))
     near = {w for w, _ in model.wv.most_similar(focus, topn=5)}
-    group = ["focus" if w == focus else "neighbour" if w in near else "other" for w in vocab]
+    group = ["Selected" if w == focus else "Top-5 similar" if w in near else "Other" for w in vocab]
 
-    emb = pd.DataFrame({"x": pts[:, 0], "y": pts[:, 1], "word": vocab,
-                        "count": counts, "group": group})
+    emb = pd.DataFrame({"x": pts[:, 0], "y": pts[:, 1], "word": vocab, "count": counts, "group": group})
     # only label the interesting words, otherwise 100 labels pile on top of each other
-    emb["label"] = np.where((emb.group != "other") | (emb["count"] >= 2), emb.word, "")
+    emb["label"] = np.where((emb.group != "Other") | (emb["count"] >= 2), emb.word, "")
     fig = px.scatter(
-        emb, x="x", y="y", text="label", hover_name="word", color="group", size="count", size_max=34,
-        color_discrete_map={"focus": PINK, "neighbour": NEON, "other": "#5b5b7a"},
-        hover_data={"x": False, "y": False, "label": False, "count": True},
+        emb, x="x", y="y", text="label", hover_name="word", color="group", size="count", size_max=22,
+        color_discrete_map={"Selected": AMBER, "Top-5 similar": ACCENT, "Other": GREY},
+        category_orders={"group": ["Selected", "Top-5 similar", "Other"]},
+        hover_data={"x": False, "y": False, "label": False, "count": True, "group": False},
     )
-    fig.update_traces(textposition="top center", textfont=dict(size=11),
-                      marker=dict(line=dict(width=0), opacity=.9))
-    # lines from the focus word to its neighbours
+    fig.update_traces(textposition="top center", textfont=dict(size=11, color=INK), marker=dict(line=dict(width=0)))
     fx, fy = emb.loc[emb.word == focus, ["x", "y"]].values[0]
-    for _, r in emb[emb.group == "neighbour"].iterrows():
+    for _, r in emb[emb.group == "Top-5 similar"].iterrows():
         fig.add_shape(type="line", x0=fx, y0=fy, x1=r.x, y1=r.y,
-                      line=dict(color=NEON, width=1, dash="dot"), layer="below")
+                      line=dict(color=ACCENT, width=1, dash="dot"), layer="below")
     fig.update_xaxes(visible=False)
     fig.update_yaxes(visible=False)
-    fig.update_layout(legend=dict(orientation="h", y=1.08, title=None))
-    st.plotly_chart(dark(fig, 620), width="stretch")
-    st.caption("Every word squeezed from its vector down to 2D with PCA. Bigger dot = word appears more often. "
-               "Note: neighbours are found in the full vector space, so they may not look closest in 2D.")
+    fig.update_layout(legend=dict(orientation="h", y=1.06, x=0, title=None))
+    st.plotly_chart(style_fig(fig, 560), width="stretch")
+    st.caption("Similar words are found in the full vector space, so they may not look like the closest points in 2D.")
 
-# ---------- tab 2: similarity ----------
-with tab2:
-    left, right = st.columns(2)
+    section("Vocabulary", "All words learned by the model, most frequent first.")
+    vocab_df = pd.DataFrame({"word": vocab, "count": counts})
+    st.dataframe(vocab_df, hide_index=True, height=280, width="stretch")
+
+# ---------- similarity ----------
+with t2:
+    section("Most similar words", "Cosine similarity between word vectors.")
+    left, right = st.columns(2, gap="large")
     for col, default in [(left, "diet"), (right, "workout")]:
         with col:
             word = st.selectbox("Word", vocab, index=vocab.index(default), key=f"sim_{default}")
             sims = pd.DataFrame(model.wv.most_similar(word, topn=5), columns=["word", "similarity"])
             bar = go.Figure(go.Bar(
                 x=sims.similarity[::-1], y=sims.word[::-1], orientation="h",
-                marker=dict(color=sims.similarity[::-1], colorscale=[[0, CYAN], [1, NEON]]),
-                text=sims.similarity[::-1].round(3), textposition="outside",
+                marker_color=ACCENT, text=sims.similarity[::-1].round(3), textposition="outside",
             ))
-            bar.update_xaxes(range=[0, 1.1], showgrid=False)
-            st.plotly_chart(dark(bar, 330), width="stretch")
-            with st.expander(f'vector for "{word}"'):
-                v = model.wv[word]
-                st.write(f"shape: {v.shape}")
-                heat = go.Figure(go.Heatmap(z=[v], colorscale=[[0, PINK], [.5, "#111"], [1, NEON]],
-                                            showscale=False))
+            bar.update_xaxes(range=[0, 1.1], showgrid=True, gridcolor="#f1f5f9")
+            st.plotly_chart(style_fig(bar, 280), width="stretch")
+            v = model.wv[word]
+            with st.expander(f"Vector for '{word}'  ·  shape {v.shape}"):
+                heat = go.Figure(go.Heatmap(z=[v], colorscale="RdBu", zmid=0, showscale=False))
                 heat.update_yaxes(visible=False)
-                st.plotly_chart(dark(heat, 120), width="stretch")
+                st.plotly_chart(style_fig(heat, 110), width="stretch")
                 st.code(np.round(v[:10], 4))
 
-    st.markdown('<div class="step"><span>//</span>Word math</div>', unsafe_allow_html=True)
+    section("Vector arithmetic",
+            "A − B + C. With only 20 sentences the result is mostly noise — analogies need a large corpus.")
     a, b, c = st.columns(3)
-    pos1 = a.selectbox("start with", vocab, index=vocab.index("workout"))
-    neg = b.selectbox("minus", vocab, index=vocab.index("strength"))
-    pos2 = c.selectbox("plus", vocab, index=vocab.index("diet"))
+    pos1 = a.selectbox("A", vocab, index=vocab.index("workout"))
+    neg = b.selectbox("minus B", vocab, index=vocab.index("strength"))
+    pos2 = c.selectbox("plus C", vocab, index=vocab.index("diet"))
     res = model.wv.most_similar(positive=[pos1, pos2], negative=[neg], topn=5)
-    st.markdown(chips([f"{w} · {s:.2f}" for w, s in res], "lime"), unsafe_allow_html=True)
-    st.caption("Honestly, with 20 sentences this is mostly noise — that's the point. Analogies need big data.")
+    st.markdown(tokens_html([f"{w} ({s:.2f})" for w, s in res], "hit"), unsafe_allow_html=True)
 
-# ---------- tab 3: preprocessing ----------
-with tab3:
-    pick = st.selectbox("Pick a noisy sentence (or type your own below)", raw_sentences)
+# ---------- preprocessing ----------
+with t3:
+    section("Try a sentence", "Choose one of the dataset sentences or type your own.")
+    pick = st.selectbox("Dataset sentence", raw_sentences, label_visibility="collapsed")
     text = st.text_input("Raw text", pick)
 
     cleaned = clean_text(text)
@@ -297,47 +311,48 @@ with tab3:
     rt = regex_tok.tokenize(cleaned)
     kept = [w for w in rt if w not in STOP]
 
-    st.markdown('<div class="step"><span>01</span>Clean</div>', unsafe_allow_html=True)
-    st.markdown(f"`{text}`  →  `{cleaned}`")
+    section("1. Cleaning")
+    st.markdown(f'<div class="row-label">Before</div><code>{text}</code>'
+                f'<div class="row-label">After</div><code>{cleaned}</code>', unsafe_allow_html=True)
 
-    st.markdown('<div class="step"><span>02</span>Tokenize</div>', unsafe_allow_html=True)
-    st.markdown("**word_tokenize (raw)** " + chips(wt), unsafe_allow_html=True)
-    st.markdown("**RegexpTokenizer (clean)** " + chips(rt), unsafe_allow_html=True)
+    section("2. Tokenization")
+    st.markdown('<div class="row-label">word_tokenize (on raw text)</div>' + tokens_html(wt), unsafe_allow_html=True)
+    st.markdown('<div class="row-label">RegexpTokenizer [a-zA-Z]+ (on cleaned text)</div>' + tokens_html(rt),
+                unsafe_allow_html=True)
 
-    st.markdown('<div class="step"><span>03</span>Stopwords</div>', unsafe_allow_html=True)
-    st.markdown("".join(chips([w], "gone" if w in STOP else "") for w in rt), unsafe_allow_html=True)
-    st.caption(f"{len(rt)} tokens → {len(kept)} tokens")
+    section("3. Stopword removal", f"{len(rt)} tokens → {len(kept)} tokens")
+    st.markdown("".join(tokens_html([w], "drop" if w in STOP else "") for w in rt), unsafe_allow_html=True)
 
-    st.markdown('<div class="step"><span>04</span>Stem & Lemmatize</div>', unsafe_allow_html=True)
+    section("4. Stemming and lemmatization")
     if kept:
         st.dataframe(pd.DataFrame({
-            "token": kept,
-            "porter": [porter.stem(w) for w in kept],
-            "snowball": [snowball.stem(w) for w in kept],
-            "lemma": lemmatize(kept),
+            "Token": kept,
+            "Porter": [porter.stem(w) for w in kept],
+            "Snowball": [snowball.stem(w) for w in kept],
+            "Lemma": lemmatize(kept),
         }), width="stretch", hide_index=True)
 
-    # vocab funnel over the whole dataset
-    st.markdown('<div class="step"><span>05</span>Vocabulary funnel (whole dataset)</div>',
-                unsafe_allow_html=True)
+    section("Vocabulary size by stage", "Across all 12 sentences in dataset.csv.")
     all_tok = [regex_tok.tokenize(clean_text(s)) for s in raw_sentences]
     all_kept = [[w for w in t if w not in STOP] for t in all_tok]
     stages = {
         "Raw tokens": {w for t in all_tok for w in t},
-        "No stopwords": {w for t in all_kept for w in t},
+        "After stopwords": {w for t in all_kept for w in t},
         "Porter": {porter.stem(w) for t in all_kept for w in t},
         "Snowball": {snowball.stem(w) for t in all_kept for w in t},
         "Lemmatized": {w for t in all_kept for w in lemmatize(t)},
     }
-    funnel = go.Figure(go.Funnel(
-        y=list(stages), x=[len(v) for v in stages.values()],
-        marker=dict(color=[PINK, "#b04dff", CYAN, "#3ddc97", NEON]),
-        textinfo="value",
+    vbar = go.Figure(go.Bar(
+        x=list(stages), y=[len(v) for v in stages.values()],
+        marker_color=[GREY, ACCENT, TEAL, TEAL, AMBER],
+        text=[len(v) for v in stages.values()], textposition="outside",
     ))
-    st.plotly_chart(dark(funnel, 360), width="stretch")
+    vbar.update_yaxes(range=[0, 90], gridcolor="#f1f5f9")
+    st.plotly_chart(style_fig(vbar, 320), width="stretch")
 
-# ---------- tab 4: porter vs snowball ----------
-with tab4:
+# ---------- stemming vs lemmatization ----------
+with t4:
+    section("Comparison table", "Every distinct non-stopword in the dataset. Rows where Porter and Snowball disagree are highlighted.")
     all_words = sorted({w for s in raw_sentences for w in regex_tok.tokenize(clean_text(s)) if w not in STOP})
     table = pd.DataFrame({
         "Original": all_words,
@@ -345,26 +360,23 @@ with tab4:
         "Snowball": [snowball.stem(w) for w in all_words],
         "Lemma": [lemmatizer.lemmatize(w, wn_pos(t)) for w, t in nltk.pos_tag(all_words)],
     })
-    table["Clash"] = np.where(table.Porter != table.Snowball, "⚡", "")
+    table["Disagree"] = table.Porter != table.Snowball
 
-    only_clash = st.toggle("Show only words where Porter and Snowball disagree")
-    view = table[table.Clash == "⚡"] if only_clash else table
-
+    only = st.toggle("Show only disagreements")
+    view = table[table.Disagree] if only else table
     st.dataframe(
-        view.style.apply(lambda r: [f"background-color: {PINK}33" if r.Clash else ""] * len(r), axis=1),
-        width="stretch", hide_index=True, height=480,
+        view.style.apply(lambda r: ["background-color: #fef3c7" if r.Disagree else ""] * len(r), axis=1),
+        width="stretch", hide_index=True, height=440,
     )
 
-    st.markdown('<div class="step"><span>//</span>Try any word</div>', unsafe_allow_html=True)
-    w = st.text_input("word", "generously").strip().lower()
+    section("Test any word")
+    w = st.text_input("Word", "generously").strip().lower()
     if w:
-        k1, k2, k3 = st.columns(3)
-        for col, lbl, val in [(k1, "Porter", porter.stem(w)), (k2, "Snowball", snowball.stem(w)),
-                              (k3, "Lemma (verb)", lemmatizer.lemmatize(w, "v"))]:
-            col.markdown(f'<div class="stat"><div class="num">{val}</div><div class="lbl">{lbl}</div></div>',
+        k = st.columns(3)
+        for col, lbl, val in [(k[0], "Porter", porter.stem(w)), (k[1], "Snowball", snowball.stem(w)),
+                              (k[2], "Lemma (as verb)", lemmatizer.lemmatize(w, "v"))]:
+            col.markdown(f'<div class="metric"><div class="v">{val}</div><div class="l">{lbl}</div></div>',
                          unsafe_allow_html=True)
 
-st.markdown(
-    "<p style='text-align:center;color:#555;margin-top:3rem'>Text Analytics · Set D · built with Gensim, NLTK & Streamlit</p>",
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="footer">Text Analytics · Set D · Python, Gensim, NLTK, Streamlit</div>',
+            unsafe_allow_html=True)
